@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>com.david.blbverse</string>
+	<key>category</key>
+	<string>Tools</string>
+	<key>connections</key>
+	<dict>
+		<key>KW1-BLB-VERSE</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>SC1-BLB-VERSE</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoc</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>David (with ChatGPT)</string>
+	<key>description</key>
+	<string>Type 'blb' + verse (e.g., rom 8:28) or keywords (e.g., justification). Opens in Google Chrome.</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>BLB Verse Search</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>keyword</key>
+				<string>blb</string>
+				<key>subtext</key>
+				<string>Verse: 'rom 8:28'  •  Search: 'justification by faith'  •  (override: -t NIV, (NIV), [NIV])</string>
+				<key>text</key>
+				<string>Blue Letter Bible</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>KW1-BLB-VERSE</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/usr/bin/env python3 "/mnt/data/BLB_Verse_Search/blb.py" "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>title</key>
+				<string>Run BLB Python script</string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>SC1-BLB-VERSE</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string></string>
+	<key>version</key>
+	<string>1.0.0</string>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>
