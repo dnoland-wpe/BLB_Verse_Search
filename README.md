@@ -11,6 +11,10 @@ Open Blue Letter Bible in **Google Chrome** for either:
 - Force keyword search: prefix with `?`, `search:`, or add `-s` anywhere
 - Always opens in **Google Chrome** (falls back to default browser if Chrome not found)
 
+## System Requirements
+- Macbook laptop or iMac desktop
+- Alfred Powerpack license
+
 ## Install
 1. Download and open the `.alfredworkflow` file below.
 2. Alfred will prompt to import the workflow.
@@ -38,4 +42,4 @@ Open Blue Letter Bible in **Google Chrome** for either:
 - On some systems, `python3` may live at a different path. Edit the workflow’s **Run Script** to use `/opt/homebrew/bin/python3` if needed.
 
 ## Credits
-- Built for David, packaged by ChatGPT.
+- Built by David T. Noland..
