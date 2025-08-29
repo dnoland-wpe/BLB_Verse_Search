@@ -5,27 +5,40 @@
 	<key>bundleid</key>
 	<string>com.david.blbverse</string>
 	<key>category</key>
-	<string>Tools</string>
+	<string>Internet</string>
 	<key>connections</key>
 	<dict>
-		<key>KW1-BLB-VERSE</key>
+		<key>6D8A4FDB-BBE6-4A72-A136-629437E5CC4A</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>SC1-BLB-VERSE</string>
+				<string>04490DB1-EF39-4962-90BA-18965D336AA8</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
 				<string></string>
-				<key>vitoc</key>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>EDDB081D-0753-439F-AE69-6CF52EEF94AC</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>6D8A4FDB-BBE6-4A72-A136-629437E5CC4A</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
 				<false/>
 			</dict>
 		</array>
 	</dict>
 	<key>createdby</key>
-	<string>David (with ChatGPT)</string>
+	<string>David Noland</string>
 	<key>description</key>
-	<string>Type 'blb' + verse (e.g., rom 8:28) or keywords (e.g., justification). Opens in Google Chrome.</string>
+	<string>Blue Letter Bible verse search function</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
@@ -35,21 +48,21 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
-				<integer>1</integer>
-				<key>keyword</key>
-				<string>blb</string>
-				<key>subtext</key>
-				<string>Verse: 'rom 8:28'  •  Search: 'justification by faith'  •  (override: -t NIV, (NIV), [NIV])</string>
-				<key>text</key>
-				<string>Blue Letter Bible</string>
-				<key>withspace</key>
-				<true/>
+				<key>browser</key>
+				<string>com.google.Chrome</string>
+				<key>skipqueryencode</key>
+				<false/>
+				<key>skipvarencode</key>
+				<false/>
+				<key>spaces</key>
+				<string></string>
+				<key>url</key>
+				<string>{query}</string>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
+			<string>alfred.workflow.action.openurl</string>
 			<key>uid</key>
-			<string>KW1-BLB-VERSE</string>
+			<string>04490DB1-EF39-4962-90BA-18965D336AA8</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -61,26 +74,265 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/env python3 "/mnt/data/BLB_Verse_Search/blb.py" "$1"</string>
+				<string>import re, sys, urllib.parse
+
+# Default translation (override with: -t ESV  or  (ESV)  or  [ESV])
+DEFAULT_TRANS = "ESV"
+
+# BLB 3-letter book codes (OT + NT)
+BLB_CODES = {
+    # OT
+    "gen": "gen", "exod": "exo", "exo": "exo", "lev": "lev", "num": "num", "deut": "deu", "deu": "deu",
+    "josh": "jos", "jos": "jos", "judg": "jdg", "jdg": "jdg", "ruth": "rut", "rut": "rut",
+    "1sam": "1sa", "1 sa": "1sa", "1 sam": "1sa", "1sm": "1sa", "1sa": "1sa",
+    "2sam": "2sa", "2 sa": "2sa", "2 sam": "2sa", "2sm": "2sa", "2sa": "2sa",
+    "1kgs": "1ki", "1kg": "1ki", "1ki": "1ki", "1 kings": "1ki",
+    "2kgs": "2ki", "2kg": "2ki", "2ki": "2ki", "2 kings": "2ki",
+    "1chr": "1ch", "1 ch": "1ch", "1 chron": "1ch", "1chron": "1ch",
+    "2chr": "2ch", "2 ch": "2ch", "2 chron": "2ch", "2chron": "2ch",
+    "ezra": "ezr", "ezr": "ezr", "neh": "neh", "esth": "est", "est": "est", "job": "job",
+    "ps": "psa", "pss": "psa", "psa": "psa", "psalm": "psa", "psalms": "psa",
+    "prov": "pro", "pro": "pro", "prv": "pro",
+    "eccl": "ecc", "ecc": "ecc", "qoh": "ecc",
+    "song": "sng", "song of songs": "sng", "song of solomon": "sng", "sos": "sng", "sng": "sng",
+    "isa": "isa", "jer": "jer", "lam": "lam", "ezek": "eze", "eze": "eze",
+    "dan": "dan", "hos": "hos", "joel": "joe", "joe": "joe", "amos": "amo", "amo": "amo",
+    "obad": "oba", "oba": "oba", "jonah": "jon", "jon": "jon", "mic": "mic",
+    "nah": "nah", "hab": "hab", "zeph": "zep", "zep": "zep",
+    "hag": "hag", "zech": "zec", "zec": "zec", "mal": "mal",
+    # NT
+    "mat": "mat", "matt": "mat", "mt": "mat", "matthew": "mat",
+    "mark": "mar", "mrk": "mar", "mar": "mar", "mk": "mar",
+    "luke": "luk", "luk": "luk", "lk": "luk",
+    "john": "jhn", "jhn": "jhn", "jn": "jhn",
+    "acts": "act", "act": "act", "ac": "act",
+    "rom": "rom", "rm": "rom", "romans": "rom",
+    "1 cor": "1co", "1cor": "1co", "1co": "1co", "1st cor": "1co", "first corinthians": "1co",
+    "2 cor": "2co", "2cor": "2co", "2co": "2co", "2nd cor": "2co", "second corinthians": "2co",
+    "gal": "gal", "eph": "eph", "phil": "phl", "php": "phl", "phl": "phl",
+    "col": "col",
+    "1 thess": "1th", "1th": "1th", "1 thes": "1th", "1thessalonians": "1th",
+    "2 thess": "2th", "2th": "2th", "2 thes": "2th", "2thessalonians": "2th",
+    "1 tim": "1ti", "1tim": "1ti", "1ti": "1ti",
+    "2 tim": "2ti", "2tim": "2ti", "2ti": "2ti",
+    "titus": "tit", "tit": "tit",
+    "philem": "phm", "philemon": "phm", "phm": "phm",
+    "heb": "heb", "hebrews": "heb",
+    "james": "jam", "jas": "jam", "jam": "jam",
+    "1 pet": "1pe", "1pet": "1pe", "1pe": "1pe",
+    "2 pet": "2pe", "2pet": "2pe", "2pe": "2pe",
+    "1 john": "1jo", "1jn": "1jo", "1 jn": "1jo", "1jo": "1jo",
+    "2 john": "2jo", "2jn": "2jo", "2 jn": "2jo", "2jo": "2jo",
+    "3 john": "3jo", "3jn": "3jo", "3 jn": "3jo", "3jo": "3jo",
+    "jude": "jud", "jud": "jud",
+    "rev": "rev", "revelation": "rev", "apocalypse": "rev"
+}
+
+def norm(s: str) -&gt; str:
+    return re.sub(r"\s+", " ", s.lower().strip())
+
+def pull_translation(s: str):
+    # Accept: -t ESV  OR  trailing (ESV) / [ESV]
+    m = re.search(r"(?:^|\s)-t\s+([A-Za-z0-9]+)\b", s, re.I)
+    if m:
+        trans = m.group(1).upper()
+        s = (s[:m.start()] + s[m.end():]).strip()
+        return s, trans
+    m = re.search(r"[\(\[]\s*([A-Za-z0-9]+)\s*[\)\]]\s*$", s)
+    if m:
+        trans = m.group(1).upper()
+        s = s[:m.start()].strip()
+        return s, trans
+    return s, DEFAULT_TRANS
+
+def pull_force_search(s: str):
+    # Force keyword search if input begins with "? ", "search:", or contains " -s "
+    s_stripped = s.lstrip()
+    if s_stripped.startswith("?"):
+        return s_stripped[1:].lstrip(), True
+    if s_stripped.lower().startswith("search:"):
+        return s_stripped[7:].lstrip(), True
+    if re.search(r"(^|\s)-s(\s|$)", s_stripped):
+        s_stripped = re.sub(r"(^|\s)-s(\s|$)", " ", s_stripped).strip()
+        return s_stripped, True
+    return s, False
+
+def parse_reference(ref: str):
+    """Return (code, chapter, verse) if it looks like a verse; otherwise None."""
+    ref = ref.replace("—", "-").replace("–", "-").replace("：", ":")
+    ref = re.sub(r"\s+", " ", ref).strip()
+    if not ref:
+        return None
+
+    m = re.match(r"(?i)^\s*(.+?)\s*(\d.*)?$", ref)
+    if not m:
+        return None
+    book_raw = norm(m.group(1))
+    nums_raw = (m.group(2) or "").strip()
+
+    book_key = book_raw
+    book_key = re.sub(r"\bfirst\b", "1", book_key)
+    book_key = re.sub(r"\bsecond\b", "2", book_key)
+    book_key = re.sub(r"\bthird\b", "3", book_key)
+    book_key = book_key.replace(" i ", " 1 ").replace(" ii ", " 2 ").replace(" iii ", " 3 ")
+    book_key = book_key.replace("1st", "1").replace("2nd", "2").replace("3rd", "3")
+    book_key = norm(book_key)
+
+    candidates = {
+        book_key,
+        book_key.replace(".", ""),
+        re.sub(r"\s+", "", book_key),
+        re.sub(r"\s+", " ", book_key),
+    }
+    long_to_short = {
+        "songs of solomon": "song of solomon",
+        "song of songs": "song of songs",
+        "song of sol": "song of solomon",
+        "ecclesiastes": "eccl", "philippians": "phil", "colossians": "col",
+        "thessalonians": "thess", "corinthians": "cor", "peter": "pet"
+    }
+    for k, v in long_to_short.items():
+        if k in book_key:
+            candidates.add(norm(book_key.replace(k, v)))
+
+    code = None
+    for c in candidates:
+        if c in BLB_CODES:
+            code = BLB_CODES[c]
+            break
+    if not code:
+        first = book_key.split()[0]
+        code = BLB_CODES.get(first)
+    if not code:
+        return None  # unknown book → treat as keyword search
+
+    if not nums_raw:
+        return None
+
+    nums_norm = nums_raw.replace(" ", "")
+    chap = verse = None
+    m_colon = re.match(r"^(\d+):(\d+(?:-\d+)?)", nums_norm)
+    if m_colon:
+        chap, verse = m_colon.group(1), m_colon.group(2)
+    else:
+        digits = re.findall(r"\d+", nums_raw)
+        if len(digits) &gt;= 2:
+            chap, verse = digits[0], digits[1]
+        elif len(digits) == 1:
+            chap = digits[0]
+        else:
+            return None
+
+    return code, chap, verse
+
+def build_url(trans: str, code: str, chap: str, verse: str):
+    trans = trans.lower()
+    if chap and verse and "-" not in verse:
+        return f"https://www.blueletterbible.org/verse/{trans}/{code}/{chap}/{verse}/"
+    elif chap and verse and "-" in verse:
+        vstart = verse.split("-")[0]
+        return f"https://www.blueletterbible.org/verse/{trans}/{code}/{chap}/{vstart}/"
+    elif chap:
+        return f"https://www.blueletterbible.org/{trans}/{code}/{chap}/1/"
+    return None
+
+def keyword_search_url(q: str, trans: str):
+    return f"https://www.blueletterbible.org/search/search.cfm?Criteria={urllib.parse.quote_plus(q)}&amp;t={trans.upper()}"
+
+def main():
+    if len(sys.argv) &lt; 2:
+        return
+    raw = sys.argv[1]
+
+    raw, force_search = pull_force_search(raw)
+    raw, trans = pull_translation(raw)
+
+    if force_search:
+        url = keyword_search_url(raw, trans)
+        print(url, end="")  # no trailing newline
+        return
+
+    parsed = parse_reference(raw)
+    if parsed:
+        code, chap, verse = parsed
+        url = build_url(trans, code, chap, verse)
+        if url:
+            print(url, end="")  # no trailing newline
+            return
+
+    # Fallback: keyword search
+    print(keyword_search_url(raw, trans), end="")  # no trailing newline
+
+if __name__ == "__main__":
+    main()</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
-				<key>title</key>
-				<string>Run BLB Python script</string>
+				<key>scriptfile</key>
+				<string></string>
 				<key>type</key>
-				<integer>0</integer>
+				<integer>9</integer>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>SC1-BLB-VERSE</string>
+			<string>6D8A4FDB-BBE6-4A72-A136-629437E5CC4A</string>
 			<key>version</key>
 			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>blb</string>
+				<key>subtext</key>
+				<string></string>
+				<key>text</key>
+				<string>Blue Letter Bible verse search</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>EDDB081D-0753-439F-AE69-6CF52EEF94AC</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 	</array>
 	<key>readme</key>
 	<string></string>
+	<key>uidata</key>
+	<dict>
+		<key>04490DB1-EF39-4962-90BA-18965D336AA8</key>
+		<dict>
+			<key>xpos</key>
+			<real>455</real>
+			<key>ypos</key>
+			<real>205</real>
+		</dict>
+		<key>6D8A4FDB-BBE6-4A72-A136-629437E5CC4A</key>
+		<dict>
+			<key>xpos</key>
+			<real>260</real>
+			<key>ypos</key>
+			<real>205</real>
+		</dict>
+		<key>EDDB081D-0753-439F-AE69-6CF52EEF94AC</key>
+		<dict>
+			<key>xpos</key>
+			<real>35</real>
+			<key>ypos</key>
+			<real>205</real>
+		</dict>
+	</dict>
+	<key>userconfigurationconfig</key>
+	<array/>
+	<key>variablesdontexport</key>
+	<array/>
 	<key>version</key>
-	<string>1.0.0</string>
+	<string></string>
 	<key>webaddress</key>
 	<string></string>
 </dict>
